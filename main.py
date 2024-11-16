@@ -43,27 +43,50 @@ class GameWidget(QWidget):
         layout.addWidget(header_label)
         
         # Timer Label
-        self.time_elapsed = 0  # Store elapsed time in seconds
         self.timer_label = QLabel("Time: 00:00")
         self.timer_label.setAlignment(Qt.AlignCenter)
         self.timer_label.setFont(QFont("Arial", 16))
         layout.addWidget(self.timer_label)
-
-        # Start the timer
-        print("Starting timer")
+        
+        # Game grid frame
+        self.grid_frame = QFrame()
+        self.grid_frame.setLayout(QGridLayout())  # Initialize an empty layout
+        layout.addWidget(self.grid_frame, alignment=Qt.AlignCenter)
+        
+        # "Start Again" button
+        self.restart_button = QPushButton("Start Again")
+        self.restart_button.clicked.connect(self.start_game)
+        self.restart_button.setVisible(False)  # Initially hidden
+        layout.addWidget(self.restart_button)
+        
+        self.setLayout(layout)
+        
+        # Start the game for the first time
+        self.start_game()
+    
+    def start_game(self):
+        """Initialize or restart the game state."""
+        # Reset timer
+        self.time_elapsed = 0
+        self.timer_label.setText("Time: 00:00")
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
-        self.timer.start(1000)  # Update every second
+        self.timer.start(1000)
 
-        # Initialize game state
+        # Reset game state
         self.grid = [[None for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
-        self.cells = []  # Store QLabel references
+        self.cells = []
         self.first_click = True
-        
-        # Game grid
-        grid_frame = QFrame()
-        grid_layout = QGridLayout(grid_frame)
-        grid_layout.setSpacing(0)
+
+        # Clear and rebuild the grid layout
+        grid_layout = self.grid_frame.layout()  # Get the existing layout
+        grid_layout.setSpacing(1)  # No space between cells
+        grid_layout.setContentsMargins(10, 10, 10, 10)  # No margin around the grid
+
+        for i in reversed(range(grid_layout.count())): 
+            widget = grid_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
 
         for row in range(GRID_HEIGHT):
             row_cells = []
@@ -79,9 +102,11 @@ class GameWidget(QWidget):
                 grid_layout.addWidget(cell, row, col)
                 row_cells.append(cell)
             self.cells.append(row_cells)
-        
-        layout.addWidget(grid_frame, alignment=Qt.AlignCenter)
-        self.setLayout(layout)
+
+        # Hide the restart button
+        self.restart_button.setVisible(False)
+        print("Game started/restarted!")
+
     
     def update_timer(self):
         self.time_elapsed += 1
@@ -126,11 +151,9 @@ class GameWidget(QWidget):
             print(f"Unflagged cell ({row}, {col})")
         else:
             # Add flag
-            # cell.setStyleSheet(" text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
             cell.setText("🚩")
             print(f"Flagged cell ({row}, {col})")
-        
-        
+           
     def reveal_cell(self, row, col, visited=None):
         # Reveal the contents of a cell and handle cascading empty cells.
         if visited is None:
@@ -163,7 +186,6 @@ class GameWidget(QWidget):
                             0 <= new_col < GRID_WIDTH):
                             self.reveal_cell(new_row, new_col, visited)  # Pass the visited set
 
-        
     def count_adjacent_mines(self, row, col):
         """Count adjacent mines for a cell"""
         count = 0
@@ -187,6 +209,14 @@ class GameWidget(QWidget):
         
         # Stop the timer
         self.timer.stop()
+        
+        # Disable further clicks on cells
+        for row in self.cells:
+            for cell in row:
+                cell.setEnabled(False)  # Disable the cell
+
+        # Show the restart button
+        self.restart_button.setVisible(True)
         
     def game_won(self):
         """Handle game won state"""
@@ -345,64 +375,3 @@ if __name__ == "__main__":
     window.show()
     sys.exit(app.exec())
 
-
-# class MinesweeperWindow(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle("Minesweeper")
-#         self.setGeometry(100, 100, 800, 600)
-
-#         # Main widget and layout
-#         main_widget = QWidget()
-#         main_layout = QVBoxLayout()  # Vertical layout for main stacking
-
-#         # Menu buttons in horizontal layout
-#         menu_layout = QHBoxLayout()  # Horizontal layout for menu
-
-#         # Adding spacers for centering
-#         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
-#         game_btn = QPushButton("Game")
-#         leaderboard_btn = QPushButton("Leaderboard")
-#         milestones_btn = QPushButton("Milestones")
-#         rules_btn = QPushButton("Rules")
-        
-#         for btn in [game_btn, leaderboard_btn, milestones_btn, rules_btn]:
-#             btn.setFixedHeight(40)
-#             btn.setStyleSheet("font-size: 14px; padding: 5px 15px;")  # Style the buttons
-#             menu_layout.addWidget(btn)
-        
-#         # Add a spacer on the right to center the buttons
-#         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
-#         # Stacked widget for different pages
-#         self.stacked_widget = QStackedWidget()
-#         self.game_widget = GameWidget()
-#         self.leaderboard_widget = LeaderboardWidget()
-#         self.milestones_widget = MilestonesWidget()
-#         self.rules_widget = RulesWidget()
-
-#         self.stacked_widget.addWidget(self.game_widget)
-#         self.stacked_widget.addWidget(self.leaderboard_widget)
-#         self.stacked_widget.addWidget(self.milestones_widget)
-#         self.stacked_widget.addWidget(self.rules_widget)
-        
-#         # Connect buttons
-#         game_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_widget))
-#         leaderboard_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.leaderboard_widget))
-#         milestones_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.milestones_widget))
-#         rules_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.rules_widget))
-        
-#         # Add layouts to main layout
-#         main_layout.addLayout(menu_layout)
-#         main_layout.addWidget(self.stacked_widget)
-
-#         main_widget.setLayout(main_layout)
-#         self.setCentralWidget(main_widget)
-        
-    
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     window = MinesweeperWindow()  # Changed from LeaderboardWidget to MinesweeperWindow
-#     window.show()
-#     sys.exit(app.exec())
