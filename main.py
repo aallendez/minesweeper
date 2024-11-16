@@ -28,7 +28,7 @@ GRID_HEIGHT = 10
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QLabel, QGridLayout, QWidget, QVBoxLayout, 
-    QHBoxLayout, QFrame, QPushButton, QStackedWidget
+    QHBoxLayout, QFrame, QPushButton, QStackedWidget, QTextEdit, QLineEdit
 )
 
 class GameWidget(QWidget):
@@ -71,10 +71,10 @@ class GameWidget(QWidget):
                 cell = QLabel()
                 cell.setFixedSize(CELL_SIZE, CELL_SIZE)
                 color = "#90EE90" if (row + col) % 2 == 0 else "#66CC66"
-                cell.setStyleSheet(f"background-color: {color}; border: 1px solid black;")
+                cell.setStyleSheet(f"background-color: {color}; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
                 
                 # Make cells clickable
-                cell.mousePressEvent = lambda e, r=row, c=col: self.handle_click(r, c)
+                cell.mousePressEvent = lambda e, r=row, c=col: self.handle_mouse_event(e, r, c)
                 
                 grid_layout.addWidget(cell, row, col)
                 row_cells.append(cell)
@@ -89,6 +89,13 @@ class GameWidget(QWidget):
         seconds = self.time_elapsed % 60
         self.timer_label.setText(f"Time: {minutes:02}:{seconds:02}")
         
+    def handle_mouse_event(self, event, row, col):
+        """Handle mouse events for cell clicks"""
+        if event.button() == Qt.LeftButton:
+            self.handle_click(row, col)
+        elif event.button() == Qt.RightButton:
+            self.handle_right_click(row, col)
+        
     def handle_click(self, row, col):
         """Handle cell clicks"""
         if self.first_click:
@@ -97,12 +104,32 @@ class GameWidget(QWidget):
             self.grid = generate_mines(self.grid, row, col)
             # Start the timer on first click
             self.timer.start(1000)
+            
+        # Prevent digging if the cell is flagged
+        if self.cells[row][col].text() == "🚩":
+            print("Cell is flagged, cannot dig.")
+            return
         
         # Handle the click
         if self.grid[row][col] == 'M':
             self.game_over()
         else:
             self.reveal_cell(row, col)
+        
+    def handle_right_click(self, row, col):
+        """Handle right clicks"""
+        print(f"Right clicked on cell ({row}, {col})")
+        cell = self.cells[row][col]
+        if cell.text() == "🚩":
+            # Remove flag
+            cell.setText("")
+            print(f"Unflagged cell ({row}, {col})")
+        else:
+            # Add flag
+            # cell.setStyleSheet(" text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
+            cell.setText("🚩")
+            print(f"Flagged cell ({row}, {col})")
+        
         
     def reveal_cell(self, row, col, visited=None):
         # Reveal the contents of a cell and handle cascading empty cells.
@@ -197,6 +224,54 @@ class MilestonesWidget(QWidget):
         # Add your milestones content here
         self.setLayout(layout)
 
+class RulesWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        
+        # Header label
+        header_label = QLabel("Rules of Minesweeper")
+        header_label.setFont(QFont("Arial", 24, QFont.Bold))
+        header_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header_label)
+        
+        # Rules text
+        rules_text = QTextEdit()
+        rules_text.setText("""
+        1. The game is played on a grid of cells.
+        2. Some cells contain mines, and others don't.
+        3. The goal is to uncover all cells that don't contain mines.
+        4. If you uncover a cell with a mine, you lose.
+        5. If you uncover all cells without mines, you win.
+        """)
+        rules_text.setReadOnly(True)  # Make the text non-editable
+        rules_text.setFont(QFont("Arial", 14))
+        layout.addWidget(rules_text)
+
+class StartScreenWidget(QWidget):
+    def __init__(self, start_game_callback):
+        super().__init__()
+        layout = QVBoxLayout()
+
+        # Header label
+        header_label = QLabel("Welcome to Minesweeper!")
+        header_label.setFont(QFont("Arial", 24, QFont.Bold))
+        header_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header_label)
+
+        # Nickname input
+        self.nickname_input = QLineEdit()
+        self.nickname_input.setPlaceholderText("Enter your nickname")
+        layout.addWidget(self.nickname_input)
+
+        # Start game button
+        start_button = QPushButton("Start Game")
+        start_button.clicked.connect(start_game_callback)
+        layout.addWidget(start_button)
+
+        self.setLayout(layout)
+
 class MinesweeperWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -205,8 +280,8 @@ class MinesweeperWindow(QMainWindow):
 
         # Main widget and layout
         main_widget = QWidget()
-        main_layout = QVBoxLayout()  # Vertical layout for main stacking
-
+        main_layout = QVBoxLayout()
+        
         # Menu buttons in horizontal layout
         menu_layout = QHBoxLayout()  # Horizontal layout for menu
 
@@ -216,8 +291,9 @@ class MinesweeperWindow(QMainWindow):
         game_btn = QPushButton("Game")
         leaderboard_btn = QPushButton("Leaderboard")
         milestones_btn = QPushButton("Milestones")
-
-        for btn in [game_btn, leaderboard_btn, milestones_btn]:
+        rules_btn = QPushButton("Rules")
+        
+        for btn in [game_btn, leaderboard_btn, milestones_btn, rules_btn]:
             btn.setFixedHeight(40)
             btn.setStyleSheet("font-size: 14px; padding: 5px 15px;")  # Style the buttons
             menu_layout.addWidget(btn)
@@ -225,31 +301,108 @@ class MinesweeperWindow(QMainWindow):
         # Add a spacer on the right to center the buttons
         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
-        # Stacked widget for different pages
+        # Create the start screen
+        self.start_screen = StartScreenWidget(self.start_game)
         self.stacked_widget = QStackedWidget()
+        self.stacked_widget.addWidget(self.start_screen)
+
+        # Create game widget and other widgets
         self.game_widget = GameWidget()
         self.leaderboard_widget = LeaderboardWidget()
         self.milestones_widget = MilestonesWidget()
+        self.rules_widget = RulesWidget()
 
         self.stacked_widget.addWidget(self.game_widget)
         self.stacked_widget.addWidget(self.leaderboard_widget)
         self.stacked_widget.addWidget(self.milestones_widget)
-
+        self.stacked_widget.addWidget(self.rules_widget)
+        
         # Connect buttons
         game_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_widget))
         leaderboard_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.leaderboard_widget))
         milestones_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.milestones_widget))
-
-        # Add layouts to main layout
+        rules_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.rules_widget))
+        
+        # Add menu layout to the main layout
         main_layout.addLayout(menu_layout)
-        main_layout.addWidget(self.stacked_widget)
 
+        # Add stacked widget to main layout
+        main_layout.addWidget(self.stacked_widget)
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
-        
-    
+
+    def start_game(self):
+        nickname = self.start_screen.nickname_input.text()
+        if nickname:
+            print(f"Starting game for {nickname}!")  # You can use this nickname in your game logic
+            self.stacked_widget.setCurrentWidget(self.game_widget)
+        else:
+            print("Please enter a nickname.")
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MinesweeperWindow()  # Changed from LeaderboardWidget to MinesweeperWindow
+    window = MinesweeperWindow()
     window.show()
     sys.exit(app.exec())
+
+
+# class MinesweeperWindow(QMainWindow):
+#     def __init__(self):
+#         super().__init__()
+#         self.setWindowTitle("Minesweeper")
+#         self.setGeometry(100, 100, 800, 600)
+
+#         # Main widget and layout
+#         main_widget = QWidget()
+#         main_layout = QVBoxLayout()  # Vertical layout for main stacking
+
+#         # Menu buttons in horizontal layout
+#         menu_layout = QHBoxLayout()  # Horizontal layout for menu
+
+#         # Adding spacers for centering
+#         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+#         game_btn = QPushButton("Game")
+#         leaderboard_btn = QPushButton("Leaderboard")
+#         milestones_btn = QPushButton("Milestones")
+#         rules_btn = QPushButton("Rules")
+        
+#         for btn in [game_btn, leaderboard_btn, milestones_btn, rules_btn]:
+#             btn.setFixedHeight(40)
+#             btn.setStyleSheet("font-size: 14px; padding: 5px 15px;")  # Style the buttons
+#             menu_layout.addWidget(btn)
+        
+#         # Add a spacer on the right to center the buttons
+#         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+#         # Stacked widget for different pages
+#         self.stacked_widget = QStackedWidget()
+#         self.game_widget = GameWidget()
+#         self.leaderboard_widget = LeaderboardWidget()
+#         self.milestones_widget = MilestonesWidget()
+#         self.rules_widget = RulesWidget()
+
+#         self.stacked_widget.addWidget(self.game_widget)
+#         self.stacked_widget.addWidget(self.leaderboard_widget)
+#         self.stacked_widget.addWidget(self.milestones_widget)
+#         self.stacked_widget.addWidget(self.rules_widget)
+        
+#         # Connect buttons
+#         game_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_widget))
+#         leaderboard_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.leaderboard_widget))
+#         milestones_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.milestones_widget))
+#         rules_btn.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.rules_widget))
+        
+#         # Add layouts to main layout
+#         main_layout.addLayout(menu_layout)
+#         main_layout.addWidget(self.stacked_widget)
+
+#         main_widget.setLayout(main_layout)
+#         self.setCentralWidget(main_widget)
+        
+    
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = MinesweeperWindow()  # Changed from LeaderboardWidget to MinesweeperWindow
+#     window.show()
+#     sys.exit(app.exec())
