@@ -104,8 +104,16 @@ class GameWidget(QWidget):
         else:
             self.reveal_cell(row, col)
         
-    def reveal_cell(self, row, col):
-        """Reveal the contents of a cell"""
+    def reveal_cell(self, row, col, visited=None):
+        # Reveal the contents of a cell and handle cascading empty cells.
+        if visited is None:
+            visited = set()
+            
+        # Skip if the cell has already been visited
+        if (row, col) in visited:
+            return
+        visited.add((row, col))
+        
         cell = self.cells[row][col]
         if self.grid[row][col] == 'M':
             cell.setStyleSheet("background-color: red; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
@@ -113,9 +121,21 @@ class GameWidget(QWidget):
         else:
             # Calculate number of adjacent mines
             mine_count = self.count_adjacent_mines(row, col)
-            if mine_count > 0:
-                cell.setText(str(mine_count))
+            cell.setText(str(mine_count) if mine_count > 0 else "")
             cell.setStyleSheet("background-color: #ccc; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
+            
+            # If there are no adjacent mines, reveal adjacent cells
+            if mine_count == 0:
+                for dx in [-1, 0, 1]:
+                    for dy in [-1, 0, 1]:
+                        if dx == 0 and dy == 0:
+                            continue  # Skip the current cell
+                        
+                        new_row, new_col = row + dx, col + dy
+                        if (0 <= new_row < GRID_HEIGHT and 
+                            0 <= new_col < GRID_WIDTH):
+                            self.reveal_cell(new_row, new_col, visited)  # Pass the visited set
+
         
     def count_adjacent_mines(self, row, col):
         """Count adjacent mines for a cell"""
