@@ -1,10 +1,11 @@
 from collections import deque
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QGridLayout, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QGridLayout, QPushButton, QMessageBox
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 
 from start_game import generate_mines
+from game_state_storage import GameStateManager
 
 CELL_SIZE = 60
 GRID_WIDTH = 10
@@ -40,6 +41,9 @@ class GameWidget(QWidget):
         
         self.setLayout(layout)
         
+        # Load the game state manager
+        self.state_manager = GameStateManager()
+        
         # Start the game for the first time
         self.start_game()
     
@@ -50,7 +54,6 @@ class GameWidget(QWidget):
         self.timer_label.setText("Time: 00:00")
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
-        self.timer.start(1000)
 
         # Reset game state
         self.grid = [[None for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
@@ -81,6 +84,9 @@ class GameWidget(QWidget):
                 grid_layout.addWidget(cell, row, col)
                 row_cells.append(cell)
             self.cells.append(row_cells)
+            
+        # Clear the game state history
+        self.state_manager.clear_history()
 
         # Hide the restart button
         self.restart_button.setVisible(False)
@@ -137,6 +143,10 @@ class GameWidget(QWidget):
         Reveal the contents of a cell and cascade to safe neighbors using BFS
         until unsafe cells (cells with adjacent mines) are reached.
         """
+        
+        # Store current game state
+        self.state_manager.push_state(self.grid, self.cells)
+        
         visited = set()
         queue = deque([(start_row, start_col)])  # Start BFS from the clicked cell
 
@@ -205,6 +215,23 @@ class GameWidget(QWidget):
                     count += 1
         return count
         
+    def undo_last_move(self):
+        """Restore previous game state"""
+        previous_state = self.state_manager.pop_state()
+        if previous_state:
+            # Restore gird
+            self.grid = previous_state.grid
+            
+            for row in range(GRID_HEIGHT):
+                for col in range(GRID_WIDTH):
+                    saved_cell = previous_state.cells_state[row][col]
+                    self.cells[row][col].setText(saved_cell['text'])
+                    self.cells[row][col].setStyleSheet(saved_cell['style'])
+                    self.cells[row][col].setEnabled(True)
+                    
+        # Resume timer
+        self.timer.start(1000)
+        
     def game_over(self):
         """Handle game over state"""
         # Reveal all mines
@@ -217,13 +244,19 @@ class GameWidget(QWidget):
         # Stop the timer
         self.timer.stop()
         
-        # Disable further clicks on cells
-        for row in self.cells:
-            for cell in row:
-                cell.setEnabled(False)  # Disable the cell
-
-        # Show the restart button
-        self.restart_button.setVisible(True)
+        # Ask player if they want to save the game state
+        reply = QMessageBox.question(self, "Oops! You stepped in the wrong place", "Would you like to undo your last move?", QMessageBox.Yes | QMessageBox.No)
+        
+        if reply == QMessageBox.Yes:
+            # Restore previous game state
+            self.undo_last_move()
+        else:
+            # Disable further clicks on cells
+            for row in self.cells:
+                for cell in row:
+                    cell.setEnabled(False)  # Disable the cell
+            # Show the restart button
+            self.restart_button.setVisible(True)
         
     def game_won(self):
         """Handle game won state"""
@@ -243,3 +276,4 @@ class GameWidget(QWidget):
         
         # Show the restart button
         self.restart_button.setVisible(True)
+
