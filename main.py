@@ -66,6 +66,7 @@ class MinesweeperWindow(QMainWindow):
         # Add a spacer on the right to center the buttons
         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
+
         # Create the start screen
         self.start_screen = StartScreenWidget(self.start_game)
         self.stacked_widget = QStackedWidget()
