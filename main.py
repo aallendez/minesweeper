@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 from start_game import generate_mines
+from collections import deque
 
 CELL_SIZE = 60
 GRID_WIDTH = 10
@@ -107,7 +108,6 @@ class GameWidget(QWidget):
         self.restart_button.setVisible(False)
         print("Game started/restarted!")
 
-    
     def update_timer(self):
         self.time_elapsed += 1
         minutes = self.time_elapsed // 60
@@ -153,38 +153,67 @@ class GameWidget(QWidget):
             # Add flag
             cell.setText("🚩")
             print(f"Flagged cell ({row}, {col})")
-           
-    def reveal_cell(self, row, col, visited=None):
-        # Reveal the contents of a cell and handle cascading empty cells.
-        if visited is None:
-            visited = set()
-            
-        # Skip if the cell has already been visited
-        if (row, col) in visited:
-            return
-        visited.add((row, col))
-        
-        cell = self.cells[row][col]
-        if self.grid[row][col] == 'M':
-            cell.setStyleSheet("background-color: red; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
-            cell.setText("💣")
-        else:
-            # Calculate number of adjacent mines
-            mine_count = self.count_adjacent_mines(row, col)
+
+    def reveal_cell(self, start_row, start_col):
+        """
+        Reveal the contents of a cell and cascade to safe neighbors using BFS
+        until unsafe cells (cells with adjacent mines) are reached.
+        """
+        visited = set()
+        queue = deque([(start_row, start_col)])  # Start BFS from the clicked cell
+
+        while queue:
+            row, col = queue.popleft()
+
+            # Skip if the cell is already visited
+            if (row, col) in visited:
+                continue
+            visited.add((row, col))
+
+            cell = self.cells[row][col]
+
+            # Skip flagged cells
+            if cell.text() == "🚩":
+                continue
+
+            # Count adjacent mines
+            mine_count = 0
+            for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]:
+                new_row, new_col = row + dx, col + dy
+                if (0 <= new_row < GRID_HEIGHT and 0 <= new_col < GRID_WIDTH and
+                    self.grid[new_row][new_col] == 'M'):
+                    mine_count += 1
+
+            # Update the cell display
             cell.setText(str(mine_count) if mine_count > 0 else "")
             cell.setStyleSheet("background-color: #ccc; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
-            
-            # If there are no adjacent mines, reveal adjacent cells
-            if mine_count == 0:
-                for dx in [-1, 0, 1]:
-                    for dy in [-1, 0, 1]:
-                        if dx == 0 and dy == 0:
-                            continue  # Skip the current cell
-                        
-                        new_row, new_col = row + dx, col + dy
-                        if (0 <= new_row < GRID_HEIGHT and 
-                            0 <= new_col < GRID_WIDTH):
-                            self.reveal_cell(new_row, new_col, visited)  # Pass the visited set
+
+            # If the cell has adjacent mines, stop expanding
+            if mine_count > 0:
+                continue
+
+            # If no adjacent mines, enqueue all neighbors
+            for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]:
+                new_row, new_col = row + dx, col + dy
+                if (0 <= new_row < GRID_HEIGHT and 0 <= new_col < GRID_WIDTH and
+                    (new_row, new_col) not in visited):
+                    queue.append((new_row, new_col))
+
+        # Check for win condition
+        self.check_win()
+
+    def check_win(self):
+        """Check if all non-mine cells have been revealed"""
+        for row in range(GRID_HEIGHT):
+            for col in range(GRID_WIDTH):
+                cell = self.cells[row][col]
+                # If cell is not revealed (still green) and not a mine, game isn't won yet
+                if (self.grid[row][col] != 'M' and 
+                    ("#90EE90" in cell.styleSheet() or "#66CC66" in cell.styleSheet())):
+                    return
+        
+        # If we get here, all non-mine cells are revealed
+        self.game_won()
 
     def count_adjacent_mines(self, row, col):
         """Count adjacent mines for a cell"""
@@ -222,6 +251,20 @@ class GameWidget(QWidget):
         """Handle game won state"""
         # Stop the timer
         self.timer.stop()
+        
+        # Flag all mines
+        for row in range(GRID_HEIGHT):
+            for col in range(GRID_WIDTH):
+                if self.grid[row][col] == 'M':
+                    self.cells[row][col].setText("🚩")
+        
+        # Disable further clicks on cells
+        for row in self.cells:
+            for cell in row:
+                cell.setEnabled(False)
+        
+        # Show the restart button
+        self.restart_button.setVisible(True)
 
 class LeaderboardWidget(QWidget):
     def __init__(self):

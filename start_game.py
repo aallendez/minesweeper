@@ -38,12 +38,6 @@ def generate_mines(grid, first_row, first_col, num_mines=20):
     return grid
 
 def breadth_first_search(grid, start_row, start_col, max_depth=1):
-    """
-    Use BFS to find all cells within a specified distance (max_depth) of the starting cell.
-    These cells will be kept safe from mines.
-    
-    Returns a set of (row, col) tuples representing safe cells.
-    """
     height = len(grid)
     width = len(grid[0])
     safe_cells = set()
