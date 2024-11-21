@@ -1,42 +1,13 @@
-""" 
-    MINESWEEPER GAME
-    
-    Algorithms:
-        - BFS for placing mines in the grid and revealing cells (worst case O(n))
-        - Quicksort for sorting the leaderboard
-        - Hashmap for the milestones and benchmarks (medallas)
-        
-    Data Structures:
-        - 2D matrix for the grid
-        - List for the leaderboard
-        - Stack for the game state history
-    
-    Optional:
-        - Dijkstra for finding the shortest path to the nearest mine
-"""
-import sys
+from Rules import RulesWidget
+from Leaderboard import LeaderboardWidget
+from Start_Screen import StartScreenWidget
+from game import GameWidget
+
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QSpacerItem, QSizePolicy
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
-from start_game import generate_mines
-from collections import deque
-
-# Import Our Own Functions and Classes
-from Leaderboard import LeaderboardWidget
-from Rules import RulesWidget
-from Start_Screen import StartScreenWidget
-from game import GameWidget
-
-CELL_SIZE = 60
-GRID_WIDTH = 10
-GRID_HEIGHT = 10
-
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QGridLayout, QWidget, QVBoxLayout, 
-    QHBoxLayout, QFrame, QPushButton, QStackedWidget, QTextEdit, QLineEdit
-)
 
 class MinesweeperWindow(QMainWindow):
     def __init__(self):
@@ -100,11 +71,3 @@ class MinesweeperWindow(QMainWindow):
             self.stacked_widget.setCurrentWidget(self.game_widget)
         else:
             print("Please enter a nickname.")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MinesweeperWindow()
-    window.show()
-    sys.exit(app.exec())
-
