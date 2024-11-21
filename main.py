@@ -13,6 +13,7 @@
     
     Optional:
         - Dijkstra for finding the shortest path to the nearest mine
+        - Graphs for an alternative version of the grid
 """
 import sys
 from PySide6.QtWidgets import (
