@@ -61,6 +61,7 @@ class GameWidget(QWidget):
         
         self.setLayout(layout)
         
+        
         # Start the game for the first time
         self.start_game()
     
