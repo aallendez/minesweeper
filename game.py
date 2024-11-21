@@ -16,6 +16,10 @@ class GameWidget(QWidget):
         super().__init__()
         layout = QVBoxLayout()
         
+        # Init Lives
+        self.live_count = 3
+        self.move_count = 0
+        
         # Header
         header_label = QLabel("Minesweeper")
         header_label.setAlignment(Qt.AlignCenter)
@@ -27,6 +31,12 @@ class GameWidget(QWidget):
         self.timer_label.setAlignment(Qt.AlignCenter)
         self.timer_label.setFont(QFont("Arial", 16))
         layout.addWidget(self.timer_label)
+        
+        # Lives Label
+        self.lives_label = QLabel(f"Lives: {self.live_count}")
+        self.lives_label.setAlignment(Qt.AlignCenter)
+        self.lives_label.setFont(QFont("Arial", 16))
+        layout.addWidget(self.lives_label)
         
         # Game grid frame
         self.grid_frame = QFrame()
@@ -114,6 +124,9 @@ class GameWidget(QWidget):
             # Start the timer on first click
             self.timer.start(1000)
             
+        # Increment move count
+        self.move_count += 1
+            
         # Prevent digging if the cell is flagged
         if self.cells[row][col].text() == "🚩":
             print("Cell is flagged, cannot dig.")
@@ -121,6 +134,7 @@ class GameWidget(QWidget):
         
         # Handle the click
         if self.grid[row][col] == 'M':
+            self.state_manager.push_state(self.grid, self.cells)
             self.game_over()
         else:
             self.reveal_cell(row, col)
@@ -216,7 +230,7 @@ class GameWidget(QWidget):
         return count
         
     def undo_last_move(self):
-        """Restore previous game state"""
+        """Restore previous game state"""    
         previous_state = self.state_manager.pop_state()
         if previous_state:
             # Restore gird
@@ -244,12 +258,21 @@ class GameWidget(QWidget):
         # Stop the timer
         self.timer.stop()
         
-        # Ask player if they want to save the game state
-        reply = QMessageBox.question(self, "Oops! You stepped in the wrong place", "Would you like to undo your last move?", QMessageBox.Yes | QMessageBox.No)
-        
-        if reply == QMessageBox.Yes:
-            # Restore previous game state
-            self.undo_last_move()
+        if self.live_count > 0 and not self.first_click and self.move_count > 2:
+            # Ask player if they want to save the game state
+            reply = QMessageBox.question(self, "Oops! You stepped in the wrong place", "Would you like to undo your last move?", QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                # Restore previous game state and decrement lives
+                self.live_count -= 1
+                self.lives_label.setText(f"Lives: {self.live_count}")
+                self.undo_last_move()
+            else:
+                # Disable further clicks on cells
+                for row in self.cells:
+                    for cell in row:
+                        cell.setEnabled(False)  # Disable the cell
+                # Show the restart button
+                self.restart_button.setVisible(True)
         else:
             # Disable further clicks on cells
             for row in self.cells:
