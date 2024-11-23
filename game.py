@@ -6,6 +6,7 @@ from PySide6.QtGui import QFont
 
 from start_game import generate_mines
 from game_state_storage import GameStateManager
+from Leaderboard import LeaderboardWidget  # Import LeaderboardWidget
 
 CELL_SIZE = 60
 GRID_WIDTH = 10
@@ -56,6 +57,18 @@ class GameWidget(QWidget):
         
         # Start the game for the first time
         self.start_game()
+        
+        self.nickname = ""
+        
+        # Add reference to LeaderboardWidget
+        self.leaderboard_widget = None  # Will be set from MinesweeperWindow
+    
+    def set_nickname(self, nickname):
+        self.nickname = nickname
+    
+    def set_leaderboard_widget(self, leaderboard_widget):
+        """Set reference to the leaderboard widget"""
+        self.leaderboard_widget = leaderboard_widget
     
     def start_game(self):
         """Initialize or restart the game state."""
@@ -299,4 +312,11 @@ class GameWidget(QWidget):
         
         # Show the restart button
         self.restart_button.setVisible(True)
-
+        
+        # Update leaderboard
+        print(f"Leaderboard Widget: {self.leaderboard_widget}, Nickname: {self.nickname}")
+        if self.leaderboard_widget and self.nickname:
+            time_taken = self.time_elapsed
+            print(f"Writing to leaderboard: {self.nickname}, Time: {time_taken}")
+            self.leaderboard_widget.write_to_leaderboard_csv(self.nickname, time_taken)
+            self.leaderboard_widget.load_and_display_leaderboard()

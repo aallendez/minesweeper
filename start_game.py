@@ -5,7 +5,7 @@
 from collections import deque
 import random
 
-def generate_mines(grid, first_row, first_col, num_mines=20):
+def generate_mines(grid, first_row, first_col, num_mines=3):
     """
     Generate mines after the first cell is clicked, ensuring an irregular safe area.
     """
