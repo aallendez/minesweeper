@@ -93,10 +93,14 @@ class MinesweeperWindow(QMainWindow):
         main_layout.addWidget(self.stacked_widget)
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
+        
+        # Connect game widget to leaderboard
+        self.game_widget.set_leaderboard_widget(self.leaderboard_widget)
 
     def start_game(self):
         nickname = self.start_screen.nickname_input.text()
         if nickname:
+            self.game_widget.set_nickname(nickname) 
             print(f"Starting game for {nickname}!")  # You can use this nickname in your game logic
             self.stacked_widget.setCurrentWidget(self.game_widget)
         else:
