@@ -5,9 +5,9 @@
 from collections import deque
 import random
 
-def generate_mines(grid, first_row, first_col, num_mines=20):
+def generate_mines(grid, first_row, first_col, num_mines):
     """
-    Generate mines after the first cell is clicked, ensuring an irregular safe area.
+    Generate mines after the first cell is clicked, ensuring an equal distribution across the grid.
     """
     height = len(grid)
     width = len(grid[0])
@@ -29,12 +29,23 @@ def generate_mines(grid, first_row, first_col, num_mines=20):
             if (0 <= neighbor_row < height and 0 <= neighbor_col < width):
                 available_cells = [cell for cell in available_cells if cell != (neighbor_row, neighbor_col)]
     
-    # Randomly select cells for mine placement
-    mine_cells = random.sample(available_cells, min(num_mines, len(available_cells)))
+    # Calculate mines per row
+    mines_per_row = num_mines // height
+    remaining_mines = num_mines % height
     
-    # Place mines in the grid
-    for row, col in mine_cells:
-        grid[row][col] = 'M'
+    # Place mines in each row
+    for row in range(height):
+        # Determine how many mines to place in this row
+        mines_in_this_row = mines_per_row + (1 if row < remaining_mines else 0)
+        
+        # Randomly select cells for mine placement in this row
+        if mines_in_this_row > 0:
+            row_cells = [(row, c) for c in range(width) if (row, c) in available_cells]
+            mine_cells = random.sample(row_cells, min(mines_in_this_row, len(row_cells)))
+            
+            # Place mines in the grid
+            for col in mine_cells:
+                grid[col[0]][col[1]] = 'M'
     
     return grid
 

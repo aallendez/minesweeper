@@ -1,6 +1,6 @@
 from collections import deque
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QGridLayout, QPushButton, QMessageBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QGridLayout, QPushButton, QMessageBox, QHBoxLayout
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 
@@ -20,24 +20,31 @@ class GameWidget(QWidget):
         # Init Lives
         self.live_count = 3
         self.move_count = 0
+        self.total_mines = 20  # Add this line to store total mines
+        self.flags_placed = 0  # Add this line to track placed flags
         
-        # Header
-        header_label = QLabel("Minesweeper")
-        header_label.setAlignment(Qt.AlignCenter)
-        header_label.setFont(QFont("Arial", 24, QFont.Bold))
-        layout.addWidget(header_label)
+        # Create a horizontal layout for the labels
+        header_layout = QHBoxLayout()  # Add this line
         
         # Timer Label
         self.timer_label = QLabel("Time: 00:00")
         self.timer_label.setAlignment(Qt.AlignCenter)
         self.timer_label.setFont(QFont("Arial", 16))
-        layout.addWidget(self.timer_label)
+        header_layout.addWidget(self.timer_label)  # Change layout to header_layout
+        
+        # Add Mines Left Label
+        self.mines_label = QLabel(f"Mines Left: {self.total_mines}")
+        self.mines_label.setAlignment(Qt.AlignCenter)
+        self.mines_label.setFont(QFont("Arial", 16))
+        header_layout.addWidget(self.mines_label)  # Change layout to header_layout
         
         # Lives Label
         self.lives_label = QLabel(f"Lives: {self.live_count}")
         self.lives_label.setAlignment(Qt.AlignCenter)
         self.lives_label.setFont(QFont("Arial", 16))
-        layout.addWidget(self.lives_label)
+        header_layout.addWidget(self.lives_label)  # Change layout to header_layout
+        
+        layout.addLayout(header_layout)  # Add the horizontal layout to the main layout
         
         # Game grid frame
         self.grid_frame = QFrame()
@@ -133,7 +140,7 @@ class GameWidget(QWidget):
         if self.first_click:
             self.first_click = False
             # Generate mines after first click
-            self.grid = generate_mines(self.grid, row, col)
+            self.grid = generate_mines(self.grid, row, col, self.total_mines)
             # Start the timer on first click
             self.timer.start(1000)
             
@@ -159,11 +166,16 @@ class GameWidget(QWidget):
         if cell.text() == "🚩":
             # Remove flag
             cell.setText("")
+            self.flags_placed -= 1
             print(f"Unflagged cell ({row}, {col})")
         else:
             # Add flag
             cell.setText("🚩")
+            self.flags_placed += 1
             print(f"Flagged cell ({row}, {col})")
+        
+        # Update mines left display
+        self.mines_label.setText(f"Mines Left: {self.total_mines - self.flags_placed}")
 
     def reveal_cell(self, start_row, start_col):
         """
