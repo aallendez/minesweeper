@@ -84,6 +84,14 @@ class GameWidget(QWidget):
         self.timer_label.setText("Time: 00:00")
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
+        
+        # Reset the amount of mines left
+        self.total_mines = 20
+        self.mines_label.setText(f"Mines Left: {self.total_mines}")
+        
+        # Reset Lives
+        self.live_count = 3
+        self.lives_label.setText(f"Lives: {self.live_count}")
 
         # Reset game state
         self.grid = [[None for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]

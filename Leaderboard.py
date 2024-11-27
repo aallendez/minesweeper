@@ -77,28 +77,6 @@ class LeaderboardWidget(QWidget):
             writer = csv.writer(file)
             writer.writerow([nickname, time])
 
-    def quick_sort(self, data, low, high):
-        """
-        Implements QuickSort algorithm to sort leaderboard data by time.
-        """
-        if low < high:
-            pivot_index = self.partition(data, low, high)
-            self.quick_sort(data, low, pivot_index - 1)
-            self.quick_sort(data, pivot_index + 1, high)
-
-    def partition(self, data, low, high):
-        """
-        Helper function for QuickSort: partitions the data around a pivot.
-        """
-        pivot = data[high][1]  # Use the time as the pivot
-        i = low - 1
-        for j in range(low, high):
-            if data[j][1] <= pivot:
-                i += 1
-                data[i], data[j] = data[j], data[i]
-        data[i + 1], data[high] = data[high], data[i + 1]
-        return i + 1
-    
     def merge_sort(self, data, index):
         if len(data) <= 1:
             return data
@@ -138,3 +116,30 @@ class LeaderboardWidget(QWidget):
             seconds = seconds % 60
             return f"{minutes}min {seconds:02d}s"
         return f"{seconds}s"
+
+
+
+    # Decided to implement merge sort instead of quick sort, this is just for visibility
+    def quick_sort(self, data, low, high):
+        """
+        Implements QuickSort algorithm to sort leaderboard data by time.
+        """
+        if low < high:
+            pivot_index = self.partition(data, low, high)
+            self.quick_sort(data, low, pivot_index - 1)
+            self.quick_sort(data, pivot_index + 1, high)
+
+    # Decided to implement merge sort instead of quick sort, this is just for visibility
+    def partition(self, data, low, high):
+        """
+        Helper function for QuickSort: partitions the data around a pivot.
+        """
+        pivot = data[high][1]  # Use the time as the pivot
+        i = low - 1
+        for j in range(low, high):
+            if data[j][1] <= pivot:
+                i += 1
+                data[i], data[j] = data[j], data[i]
+        data[i + 1], data[high] = data[high], data[i + 1]
+        return i + 1
+    
