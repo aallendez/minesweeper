@@ -24,6 +24,7 @@ class LeaderboardWidget(QWidget):
         """
         Reads the leaderboard data from the CSV, sorts it, and displays the top 10 scores.
         """
+        
         # Clear existing labels
         while self.layout.count() > 1:
             widget = self.layout.takeAt(1).widget()
@@ -31,10 +32,10 @@ class LeaderboardWidget(QWidget):
                 widget.deleteLater()
 
         # Read data from CSV
-        leaderboard_data = self.read_leaderboard_csv()
+        leaderboard_data = self.read_leaderboard_csv()  # Read the leaderboard data
 
-        # Sort data using QuickSort
-        self.quick_sort(leaderboard_data, 0, len(leaderboard_data) - 1)
+        # Sort data using MergeSort
+        leaderboard_data = self.merge_sort(leaderboard_data, 1)  # Sort by time (index 1)
 
         # Display only the top 10 scores
         for index, player_data in enumerate(leaderboard_data[:10]):
@@ -97,6 +98,38 @@ class LeaderboardWidget(QWidget):
                 data[i], data[j] = data[j], data[i]
         data[i + 1], data[high] = data[high], data[i + 1]
         return i + 1
+    
+    def merge_sort(self, data, index):
+        if len(data) <= 1:
+            return data
+        
+        mid = len(data) // 2
+        left = self.merge_sort(data[:mid], index)
+        right = self.merge_sort(data[mid:], index)
+        
+        return self.merge(left, right, index)
+
+    def merge(self, left, right, index):
+        sorted_list = []
+        i = j = 0
+        
+        while i < len(left) and j < len(right):
+            if left[i][index] < right[j][index]:
+                sorted_list.append(left[i])
+                i += 1
+            else:
+                sorted_list.append(right[j])
+                j += 1
+                
+        while i < len(left):
+            sorted_list.append(left[i])
+            i += 1
+            
+        while j < len(right):
+            sorted_list.append(right[j])
+            j += 1
+            
+        return sorted_list
 
     def format_time(self, seconds):
         """Format time in seconds to 'minutes:seconds'."""
