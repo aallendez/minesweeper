@@ -242,16 +242,16 @@ class GameWidget(QWidget):
         self.state_manager.push_state(self.grid, self.cells)
         
         visited = set()
-        queue = deque([(start_row, start_col)])  # Start BFS from the clicked cell
-
+        queue = deque([(start_row, start_col)])  # O(1) amortized - List append
+        
         while queue:
             row, col = queue.popleft()
-
-            # Skip if the cell is already visited
+            
+            # Skip if already visited
             if (row, col) in visited:
                 continue
-            visited.add((row, col))
-
+            visited.add((row, col))  # O(1) amortized - Set add
+            
             cell = self.cells[row][col]
 
             # Skip flagged cells
@@ -279,7 +279,7 @@ class GameWidget(QWidget):
                 new_row, new_col = row + dx, col + dy
                 if (0 <= new_row < GRID_HEIGHT and 0 <= new_col < GRID_WIDTH and
                     (new_row, new_col) not in visited):
-                    queue.append((new_row, new_col))
+                    queue.append((new_row, new_col))  # O(1) amortized - List append
 
         # Check for win condition
         self.check_win()

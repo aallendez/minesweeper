@@ -25,12 +25,12 @@ class GameStateManager:
         
     def push_state(self, grid, cells):
         """Store current game state
-        Best Case: O(1) - No cells to store
+        Best Case: O(1) amortized - Appending to history list
         Average Case: O(height * width + m * n) - Creating a new GameState
         Worst Case: O(height * width + m * n) - Creating a new GameState
         """
         state = GameState(grid, cells)  # O(height * width + m * n) Creating a new GameState
-        self.history.append(state)  # O(1) 
+        self.history.append(state)  # O(1) amortized - List append
         
     def pop_state(self):
         """

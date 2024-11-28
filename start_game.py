@@ -66,8 +66,8 @@ def irregular_safe_area(grid, start_row, start_col, min_safe_cells=12):
     height = len(grid)  # O(1)
     width = len(grid[0])  # O(1)
     safe_cells = set()  # O(1)
-    queue = deque([(start_row, start_col)])  # O(1)
-    safe_cells.add((start_row, start_col))  # O(1)
+    queue = deque([(start_row, start_col)])  # O(1) amortized - List append
+    safe_cells.add((start_row, start_col))  # O(1) amortized - Set add
     
     directions = [  # O(1)
         (-1, -1), (-1, 0), (-1, 1),
@@ -87,7 +87,7 @@ def irregular_safe_area(grid, start_row, start_col, min_safe_cells=12):
                     and (new_row, new_col) not in safe_cells  # O(1)
                     # Random probability of expansion (70%)
                     and random.random() < 0.7):  # O(1)
-                safe_cells.add((new_row, new_col))  # O(1)
-                queue.append((new_row, new_col))  # O(1)
+                safe_cells.add((new_row, new_col))  # O(1) amortized - Set add
+                queue.append((new_row, new_col))  # O(1) amortized - List append
     
     return safe_cells  # O(1)
