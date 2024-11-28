@@ -71,32 +71,48 @@ class GameWidget(QWidget):
         self.leaderboard_widget = None  # Will be set from MinesweeperWindow
     
     def set_nickname(self, nickname):
-        self.nickname = nickname
+        """
+        Set the nickname
+        Best Case: O(1) - Set the nickname
+        Average Case: O(1) - Set the nickname
+        Worst Case: O(1) - Set the nickname
+        """
+        self.nickname = nickname # O(1)
     
     def set_leaderboard_widget(self, leaderboard_widget):
-        """Set reference to the leaderboard widget"""
-        self.leaderboard_widget = leaderboard_widget
+        """
+        Set reference to the leaderboard widget
+        Best Case: O(1) - Set reference to the leaderboard widget
+        Average Case: O(1) - Set reference to the leaderboard widget
+        Worst Case: O(1) - Set reference to the leaderboard widget
+        """
+        self.leaderboard_widget = leaderboard_widget # O(1)
     
     def start_game(self):
-        """Initialize or restart the game state."""
+        """
+        Initialize or restart the game state.
+        Best Case: O(1) - Initialize or restart the game state
+        Average Case: O(1) - Initialize or restart the game state
+        Worst Case: O(1) - Initialize or restart the game state
+        """
         # Reset timer
-        self.time_elapsed = 0
-        self.timer_label.setText("Time: 00:00")
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_timer)
+        self.time_elapsed = 0 # O(1)
+        self.timer_label.setText("Time: 00:00") # O(1)
+        self.timer = QTimer(self) # O(1)
+        self.timer.timeout.connect(self.update_timer) # O(1)
         
         # Reset the amount of mines left
-        self.total_mines = 20
+        self.total_mines = 20 # O(1)
         self.mines_label.setText(f"Mines Left: {self.total_mines}")
         
         # Reset Lives
-        self.live_count = 3
-        self.lives_label.setText(f"Lives: {self.live_count}")
+        self.live_count = 3 # O(1)
+        self.lives_label.setText(f"Lives: {self.live_count}") # O(1)
 
         # Reset game state
-        self.grid = [[None for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
-        self.cells = []
-        self.first_click = True
+        self.grid = [[None for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)] # O(width * height)
+        self.cells = [] # O(1)
+        self.first_click = True # O(1)
 
         # Clear and rebuild the grid layout
         grid_layout = self.grid_frame.layout()  # Get the existing layout
@@ -104,47 +120,59 @@ class GameWidget(QWidget):
         grid_layout.setContentsMargins(10, 10, 10, 10)  # No margin around the grid
 
         for i in reversed(range(grid_layout.count())): 
-            widget = grid_layout.itemAt(i).widget()
+            widget = grid_layout.itemAt(i).widget() # O(1)
             if widget:
-                widget.setParent(None)
+                widget.setParent(None) # O(1)
 
         for row in range(GRID_HEIGHT):
             row_cells = []
             for col in range(GRID_WIDTH):
-                cell = QLabel()
-                cell.setFixedSize(CELL_SIZE, CELL_SIZE)
-                color = "#90EE90" if (row + col) % 2 == 0 else "#66CC66"
-                cell.setStyleSheet(f"background-color: {color}; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;")
+                cell = QLabel() # O(1)
+                cell.setFixedSize(CELL_SIZE, CELL_SIZE) # O(1)
+                color = "#90EE90" if (row + col) % 2 == 0 else "#66CC66" # O(1)
+                cell.setStyleSheet(f"background-color: {color}; border: 1px solid black; text-align: center; font-size: 24px; display: flex; padding-left: 17px;") # O(1)
                 
                 # Make cells clickable
-                cell.mousePressEvent = lambda e, r=row, c=col: self.handle_mouse_event(e, r, c)
+                cell.mousePressEvent = lambda e, r=row, c=col: self.handle_mouse_event(e, r, c) # O(1)
                 
-                grid_layout.addWidget(cell, row, col)
-                row_cells.append(cell)
-            self.cells.append(row_cells)
+                grid_layout.addWidget(cell, row, col) # O(1)
+                row_cells.append(cell) # O(1)
+            self.cells.append(row_cells) # O(1)
             
         # Clear the game state history
-        self.state_manager.clear_history()
+        self.state_manager.clear_history() # O(1)
 
         # Hide the restart button
         self.restart_button.setVisible(False)
         print("Game started/restarted!")
 
     def update_timer(self):
+        """Update the timer
+        Best Case: O(1) - Simple timer update
+        Average Case: O(1) - Simple timer update
+        Worst Case: O(1) - Simple timer update
+        """
         self.time_elapsed += 1
         minutes = self.time_elapsed // 60
         seconds = self.time_elapsed % 60
         self.timer_label.setText(f"Time: {minutes:02}:{seconds:02}")
         
     def handle_mouse_event(self, event, row, col):
-        """Handle mouse events for cell clicks"""
+        """Handle mouse events for cell clicks
+        Best Case: O(1) - Simple flag toggle and counter update
+        Average Case: O(1) - Simple flag toggle and counter update
+        Worst Case: O(1) - Simple flag toggle and counter update
+        """
         if event.button() == Qt.LeftButton:
             self.handle_click(row, col)
         elif event.button() == Qt.RightButton:
             self.handle_right_click(row, col)
         
     def handle_click(self, row, col):
-        """Handle cell clicks"""
+        """Handle cell clicks
+        Every Case: O(1) - one click, check if digged and check if it is mine (not taking 
+        into account the time complexity of the functions called inside).
+        """
         if self.first_click:
             self.first_click = False
             # Generate mines after first click
@@ -168,7 +196,9 @@ class GameWidget(QWidget):
             self.reveal_cell(row, col)
         
     def handle_right_click(self, row, col):
-        """Handle right clicks"""
+        """Handle right clicks
+        Every Case: O(1) - one click, check if flagged and add or remove flag
+        """
         print(f"Right clicked on cell ({row}, {col})")
         cell = self.cells[row][col]
         if cell.text() == "🚩":
@@ -185,10 +215,27 @@ class GameWidget(QWidget):
         # Update mines left display
         self.mines_label.setText(f"Mines Left: {self.total_mines - self.flags_placed}")
 
+    # Uses BFS to reveal cells
     def reveal_cell(self, start_row, start_col):
         """
-        Reveal the contents of a cell and cascade to safe neighbors using BFS
-        until unsafe cells (cells with adjacent mines) are reached.
+        BFS implementation to reveal cells.
+        
+        Time Complexity Analysis:
+        - Worst Case: O(N) where N is total number of cells (GRID_WIDTH * GRID_HEIGHT)
+          Occurs when there are no mines and all cells need to be revealed
+        - Average Case: O(K) where K is the number of connected safe cells
+          Usually much smaller than N as mines break up the connected regions
+        - Best Case: O(1) when clicking on a cell with adjacent mines
+        
+        Space Complexity: O(N) for visited set and queue
+        
+        Why BFS is optimal for this task:
+        1. Guarantees shortest path exploration from start cell
+        2. Reveals cells in a visually intuitive "wave-like" pattern
+        3. More memory efficient than DFS for this case as stack depth
+           could be large in DFS
+        4. Prevents stack overflow that could occur with recursive DFS
+           in large empty areas
         """
         
         # Store current game state
@@ -238,7 +285,11 @@ class GameWidget(QWidget):
         self.check_win()
 
     def check_win(self):
-        """Check if all non-mine cells have been revealed"""
+        """Check if all non-mine cells have been revealed
+        Complexity: O(N) where N is total grid size
+        Must check every cell's state
+        Worst Case: O(N) - Must check every cell
+        """
         for row in range(GRID_HEIGHT):
             for col in range(GRID_WIDTH):
                 cell = self.cells[row][col]
@@ -251,7 +302,11 @@ class GameWidget(QWidget):
         self.game_won()
 
     def count_adjacent_mines(self, row, col):
-        """Count adjacent mines for a cell"""
+        """
+        Count adjacent mines for a cell
+        Complexity: O(1 * n) - Always checks exactly 8 adjacent cells where n is 8
+        Worst Case: O(1 * n) - Always checks exactly 8 adjacent cells where n is 8
+        """
         count = 0
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
@@ -263,7 +318,11 @@ class GameWidget(QWidget):
         return count
         
     def undo_last_move(self):
-        """Restore previous game state"""    
+        """Restore previous game state
+        Complexity: O(N) where N is grid size (height * width)
+        Must restore state of every cell
+        Worst Case: O(N) - Must restore state of every cell (height * width)
+        """
         previous_state = self.state_manager.pop_state()
         if previous_state:
             # Restore gird
@@ -280,7 +339,11 @@ class GameWidget(QWidget):
         self.timer.start(1000)
         
     def game_over(self):
-        """Handle game over state"""
+        """Handle game over state
+        Best Case: O(1) - Only one mine remains to be revealed
+        Average Case: O(height * width) - Reveal all mines and disable all cells
+        Worst Case: O(height * width) - Reveal all mines and disable all cells
+        """
         # Reveal all mines
         for row in range(GRID_HEIGHT):
             for col in range(GRID_WIDTH):
@@ -315,7 +378,11 @@ class GameWidget(QWidget):
             self.restart_button.setVisible(True)
         
     def game_won(self):
-        """Handle game won state"""
+        """Handle game won state
+        Complexity: O(height * width) where height and width are grid size
+        Must flag all mines and disable all cells
+        Worst Case: O(height * width) - Must flag all mines and disable all cells
+        """
         # Stop the timer
         self.timer.stop()
         
