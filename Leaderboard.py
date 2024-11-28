@@ -85,52 +85,91 @@ class LeaderboardWidget(QWidget):
     def merge_sort(self, data, index):
         """
         Sorts the data using the Merge Sort algorithm.
-        Best Case: O(n log n) - When both lists are already sorted and all elements are merged in a single pass.
-        Average Case: O(n log n) - When both lists are already sorted and all elements are merged in a single pass.
-        Worst Case: O(n log n) - When both lists are already sorted and all elements are merged in a single pass.
+
+        Time Complexity Analysis:
+        - Merge Sort divides the list into two halves recursively, sorts each half, and then merges them.
+        - The splitting operation occurs log(n) times (dividing the data into halves).
+        - The merging operation, which is linear (O(n)), happens at each level of recursion.
+        - Therefore, the total complexity is O(n log n).
+
+        Best Case: O(n log n)
+        - Even if the data is already sorted, the recursive splitting and merging steps still occur.
+
+        Average Case: O(n log n)
+        - The general case where data requires sorting during merge operations.
+
+        Worst Case: O(n log n)
+        - Even in the worst case (completely unsorted data), the complexity remains O(n log n) 
+        because all elements are processed and merged at every level.
+
+        Space Complexity:
+        - Merge Sort requires O(n) auxiliary space for the merged array, making it less space-efficient than in-place sorting algorithms.
+
+        Why Merge Sort is the best option for this task:
+        1. Stable Sorting: Merge Sort maintains the relative order of equal elements, which is essential for sorting by one key (e.g., `index`) while preserving existing order from prior sorts.
+        2. Predictable Performance: Unlike QuickSort, which can degrade to O(n^2) in the worst case, Merge Sort consistently performs at O(n log n) regardless of the input distribution. It is convenient to do this if we plan the game to scale.
+        3. Handles Large Data Efficiently: Merge Sort processes large datasets effectively, especially when data is stored in linked lists or external storage, as it works well with sequential access patterns.
+        4. Ease of Implementation for Recursive Structures: The divide-and-conquer approach naturally fits recursive programming, making it straightforward to implement and debug.
+
+        Why not QuickSort or other algorithms?
+        - QuickSort has a lower average constant factor for in-place operations, but its worst-case performance (O(n^2)) makes it unsuitable for guaranteed efficiency.
+        - Bubble Sort is too slow for large datasets, with O(n^2) time complexity in most cases.
         """
-        if len(data) <= 1:  # O(1)
+        if len(data) <= 1:  # Base case: lists of size 1 or empty are already sorted. O(1)
             return data  # O(1)
         
-        mid = len(data) // 2  # O(1)
-        left = self.merge_sort(data[:mid], index)  # O(n log n)
-        right = self.merge_sort(data[mid:], index)  # O(n log n)
+        mid = len(data) // 2  # Find the midpoint of the list. O(1)
+        # Recursively sort the left and right halves. Each call is O(n log n).
+        left = self.merge_sort(data[:mid], index)
+        right = self.merge_sort(data[mid:], index)
         
-        return self.merge(left, right, index)  # O(n)
+        # Merge the two sorted halves. O(n)
+        return self.merge(left, right, index)
 
     def merge(self, left, right, index):
         """
-        Merges two sorted lists.
-        Time Complexity: O(n)
-        
-        Best Case: O(n) - When both lists are already sorted and all elements are merged in a single pass.
-        Worst Case: O(n) - The time complexity remains linear regardless of the input distribution.
-        Average Case: O(n) - On average, the merge operation will also take linear time.
-        
-        Merge sort is stable and guarantees O(n log n) time complexity for sorting, 
-        which is better than quicksort's average case of O(n log n) due to quicksort's 
-        potential O(n^2) worst-case scenario when the pivot selection is poor.
+        Merges two sorted lists into a single sorted list.
+
+        Time Complexity Analysis:
+        - The merge function processes all elements in `left` and `right` exactly once.
+        - Therefore, the time complexity is O(n), where n = len(left) + len(right).
+
+        Best Case: O(n)
+        - All elements in `left` and `right` are processed in a single pass.
+
+        Average Case: O(n)
+        - On average, every element in `left` and `right` is compared once and added to the result.
+
+        Worst Case: O(n)
+        - Regardless of the input distribution, every element in both lists must be processed.
+
+        Space Complexity:
+        - Requires additional space for the merged list, proportional to the total size of `left` and `right`.
         """
-        sorted_list = []  # O(1)
-        i = j = 0  # O(1)
+        sorted_list = []  # Initialize an empty list for the sorted result. O(1)
+        i = j = 0  # Indices for iterating over `left` and `right`. O(1)
         
-        while i < len(left) and j < len(right):  # O(n)
-            if left[i][index] < right[j][index]:  # O(1)
-                sorted_list.append(left[i])  # O(1)
-                i += 1  # O(1)
+        # Process both lists until one is exhausted. O(n)
+        while i < len(left) and j < len(right):  
+            if left[i][index] < right[j][index]:  # Compare elements at the given index. O(1)
+                sorted_list.append(left[i])  # Append smaller element to the result. O(1)
+                i += 1  # Move to the next element in `left`. O(1)
             else:
-                sorted_list.append(right[j])  # O(1)
-                j += 1  # O(1)
-                
-        while i < len(left):  # O(n)
-            sorted_list.append(left[i])  # O(1)
-            i += 1  # O(1)
-            
-        while j < len(right):  # O(n)
-            sorted_list.append(right[j])  # O(1)
-            j += 1  # O(1)
-            
-        return sorted_list  # O(1)
+                sorted_list.append(right[j])  # Append smaller element to the result. O(1)
+                j += 1  # Move to the next element in `right`. O(1)
+        
+        # Append any remaining elements from `left`. O(n)
+        while i < len(left):
+            sorted_list.append(left[i])
+            i += 1
+        
+        # Append any remaining elements from `right`. O(n)
+        while j < len(right):
+            sorted_list.append(right[j])
+            j += 1
+        
+        return sorted_list  # Return the merged and sorted list. O(1)
+
 
     def format_time(self, seconds):
         """Format time in seconds to 'minutes:seconds'.

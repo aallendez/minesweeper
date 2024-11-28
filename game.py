@@ -218,24 +218,24 @@ class GameWidget(QWidget):
     # Uses BFS to reveal cells
     def reveal_cell(self, start_row, start_col):
         """
-        BFS implementation to reveal cells.
-        
+        BFS implementation to reveal cells in Minesweeper.
+
         Time Complexity Analysis:
-        - Worst Case: O(N) where N is total number of cells (GRID_WIDTH * GRID_HEIGHT)
-          Occurs when there are no mines and all cells need to be revealed
-        - Average Case: O(K) where K is the number of connected safe cells
-          Usually much smaller than N as mines break up the connected regions
-        - Best Case: O(1) when clicking on a cell with adjacent mines
-        
-        Space Complexity: O(N) for visited set and queue
-        
+        - Worst Case: O(N), where N = GRID_WIDTH * GRID_HEIGHT (total number of cells).
+        Occurs when there are no mines, and all cells are revealed in a single BFS traversal.
+        - Average Case: O(K), where K is the number of connected safe cells.
+        K is usually much smaller than N since mines divide the grid into smaller connected regions.
+        - Best Case: O(1), when the clicked cell has adjacent mines and no neighbors are enqueued.
+
+        Space Complexity:
+        - O(N) for the `visited` set and the BFS `queue`.
+        Both could potentially store all cells in the grid in the worst case.
+
         Why BFS is optimal for this task:
-        1. Guarantees shortest path exploration from start cell
-        2. Reveals cells in a visually intuitive "wave-like" pattern
-        3. More memory efficient than DFS for this case as stack depth
-           could be large in DFS
-        4. Prevents stack overflow that could occur with recursive DFS
-           in large empty areas
+        1. Guarantees shortest path exploration from the starting cell.
+        2. Reveals cells in a visually intuitive "wave-like" pattern.
+        3. Avoids stack overflow that could occur with recursive DFS for large grids.
+        4. More memory-efficient than DFS in this case, as recursion depth could be large for empty regions.
         """
         
         # Store current game state

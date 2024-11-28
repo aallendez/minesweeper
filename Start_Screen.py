@@ -4,6 +4,10 @@ from PySide6.QtCore import Qt
 
 class StartScreenWidget(QWidget):
     def __init__(self, start_game_callback):
+        """
+            Initialize the start screen widget.
+            O(1) all the time. Since you are only initializing the widget.
+        """
         super().__init__()
 
         # Set up main layout
@@ -74,7 +78,10 @@ class StartScreenWidget(QWidget):
         self.setStyleSheet("background-color: #f0f0f0;")  # O(1)
 
     def enable_start_button(self):
-        """Enable start button only when nickname is entered."""
+        """
+            Enable start button only when nickname is entered.
+            O(n) where n is the length of the input text.
+        """
         if self.nickname_input.text().strip():  # O(n) where n is the length of the input text
             self.start_button.setEnabled(True)  # O(1)
         else:

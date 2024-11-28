@@ -37,9 +37,7 @@ class MinesweeperWindow(QMainWindow):
     def __init__(self):
         """
         Initialize the MinesweeperWindow
-        Best Case: O(1) - Initialize the MinesweeperWindow
-        Average Case: O(1) - Initialize the MinesweeperWindow
-        Worst Case: O(1) - Initialize the MinesweeperWindow
+        Case is always O(1) since you are only initializing the window.
         """
         super().__init__()
         self.setWindowTitle("Minesweeper")  # O(1)
@@ -62,7 +60,7 @@ class MinesweeperWindow(QMainWindow):
         # Initially hide the game button
         self.game_btn.hide()  # O(1)
         
-        for btn in [self.game_btn, leaderboard_btn, rules_btn]:  # O(3) - Iterating through 3 buttons
+        for btn in [self.game_btn, leaderboard_btn, rules_btn]:  # O(n) where n is the number of buttons (3)
             btn.setFixedHeight(40)  # O(1)
             btn.setStyleSheet("font-size: 14px; padding: 5px 15px;")  # O(1)
             menu_layout.addWidget(btn)  # O(1)

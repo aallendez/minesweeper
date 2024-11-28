@@ -8,9 +8,7 @@ import random
 def generate_mines(grid, first_row, first_col, num_mines):
     """
     Generate mines after the first cell is clicked, ensuring an equal distribution across the grid.
-    Best Case: O(height * width) - When the safe cells are already determined and all cells are filtered.
-    Average Case: O(height * width) - When the safe cells are already determined and all cells are filtered.
-    Worst Case: O(height * width) - When the safe cells are already determined and all cells are filtered.
+    Case is always O(height * width) since the safe cells are always determined by the irregular_safe_area function.
     """
     height = len(grid)  # O(1)
     width = len(grid[0])  # O(1)
@@ -28,12 +26,12 @@ def generate_mines(grid, first_row, first_col, num_mines):
     # Space Complexity: O(height * width) for available_cells
     
     # Exclude the first cell and its neighbors from mine placement
-    for dx in [-1, 0, 1]:  # O(1)
-        for dy in [-1, 0, 1]:  # O(1)
+    for dx in [-1, 0, 1]:  # O(n^2) where n^2 is 9 (3 * 3)
+        for dy in [-1, 0, 1]:  # O(n) where n is 3
             neighbor_row = first_row + dx  # O(1)
             neighbor_col = first_col + dy  # O(1)
             if (0 <= neighbor_row < height and 0 <= neighbor_col < width):  # O(1)
-                available_cells = [cell for cell in available_cells if cell != (neighbor_row, neighbor_col)]  # O(n)
+                available_cells = [cell for cell in available_cells if cell != (neighbor_row, neighbor_col)]  # O(n) where n is the number of cells in available_cells
     
     # Calculate mines per row
     mines_per_row = num_mines // height  # O(1)
@@ -50,7 +48,7 @@ def generate_mines(grid, first_row, first_col, num_mines):
             mine_cells = random.sample(row_cells, min(mines_in_this_row, len(row_cells)))  # O(min(mines_in_this_row, width))
             
             # Place mines in the grid
-            for col in mine_cells:  # O(min(mines_in_this_row, width))
+            for col in mine_cells:  # O(m) where m is the number of mines in this column
                 grid[col[0]][col[1]] = 'M'  # O(1)
     
     return grid  # O(1)
@@ -81,7 +79,7 @@ def irregular_safe_area(grid, start_row, start_col, min_safe_cells=12):
         # Randomize direction order for irregular expansion
         random.shuffle(directions)  # O(1)
         
-        for dx, dy in directions:  # O(1)
+        for dx, dy in directions:  # O(n) where n is the number of directions
             new_row, new_col = row + dx, col + dy  # O(1)
             if (0 <= new_row < height and 0 <= new_col < width  # O(1)
                     and (new_row, new_col) not in safe_cells  # O(1)

@@ -13,9 +13,7 @@ class MinesweeperWindow(QMainWindow):
     def __init__(self):
         """
         Initialize the MinesweeperWindow
-        Best Case: O(1) - Initialize the MinesweeperWindow
-        Average Case: O(1) - Initialize the MinesweeperWindow
-        Worst Case: O(1) - Initialize the MinesweeperWindow
+        Case is always O(1) since you are only initializing the window.
         """
         super().__init__()
         self.setWindowTitle("Minesweeper")  # O(1)
@@ -73,9 +71,7 @@ class MinesweeperWindow(QMainWindow):
     def start_game(self):
         """
         Start the game
-        Best Case: O(1) - Start the game
-        Average Case: O(1) - Start the game
-        Worst Case: O(1) - Start the game
+        Case is always O(1) since you are only getting the nickname and starting the game.
         """
         nickname = self.start_screen.nickname_input.text()  # O(1) 
         if nickname:  # O(1)

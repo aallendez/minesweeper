@@ -1,10 +1,11 @@
 class GameState:
     def __init__(self, grid, cells_state):
         """
-        Initialize the GameState
-        Best Case: O(height * width) - Copying the grid
-        Average Case: O(height * width) - Copying the grid
-        Worst Case: O(height * width) - Copying the grid
+        This function initializes a stack data structure where the game state is stored 
+        each time the player makes a move. When the player clicks on a cell, the current 
+        state is stored in the stack. When the player clicks on the "Undo" button (if they have
+        lives left), the previous state is retrieved from the stack by popping the last element of the
+        stack.
         """
         self.grid = [row[:] for row in grid]  # O(height * width) 
         self.cells_state = []  # O(1) 
@@ -25,9 +26,7 @@ class GameStateManager:
         
     def push_state(self, grid, cells):
         """Store current game state
-        Best Case: O(1) amortized - Appending to history list
-        Average Case: O(height * width + m * n) - Creating a new GameState
-        Worst Case: O(height * width + m * n) - Creating a new GameState
+        Case is always O(height * width + m * n) where m is the number of rows and n is the number of cells in each row since you are creating a new GameState and appending it to the history list.
         """
         state = GameState(grid, cells)  # O(height * width + m * n) Creating a new GameState
         self.history.append(state)  # O(1) amortized - List append
@@ -35,9 +34,7 @@ class GameStateManager:
     def pop_state(self):
         """
         Return to previous state
-        Best Case: O(1) - No states to return to
-        Average Case: O(1) - Return to previous state
-        Worst Case: O(1) - Return to previous state
+        Case is always O(1) since you are only popping from the history list.
         """
         if self.history:  # O(1) 
             return self.history.pop()  # O(1) 
@@ -45,8 +42,6 @@ class GameStateManager:
     
     def clear_history(self):
         """Clear all history
-        Best Case: O(1) - No states to clear
-        Average Case: O(1) - Clear all states
-        Worst Case: O(1) - Clear all states
+        Case is always O(1) since you are only clearing the history list.
         """
         self.history.clear()  # O(1) 
